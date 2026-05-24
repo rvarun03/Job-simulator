@@ -15,4 +15,4 @@ async def ws_endpoint(websocket: WebSocket, resume_id: int):
             await websocket.receive_text()  # keep alive
 
     except:
-        manager.disconnect(resume_id)
+        manager.disconnect(resume_id, websocket)

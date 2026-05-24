@@ -3,7 +3,38 @@ from services.FAISS import get_resume_context
 from chains.chat_chain import chat_chain
 from core.ws_manager import manager
 
+active_chat_ids: set[int] = set()
+
+
 async def ask_chat_question(
+        resume_id: int,
+        question: str
+):
+    if resume_id in active_chat_ids:
+        await manager.send(
+            resume_id,
+            {
+                "step": "busy"
+            }
+        )
+
+        return {
+            "answer": "",
+            "status": "busy"
+        }
+
+    active_chat_ids.add(resume_id)
+
+    try:
+        return await stream_chat_answer(
+            resume_id,
+            question
+        )
+    finally:
+        active_chat_ids.discard(resume_id)
+
+
+async def stream_chat_answer(
         resume_id: int,
         question: str
 ):
@@ -31,31 +62,41 @@ async def ask_chat_question(
         }
     )
 
-    result = await asyncio.to_thread(
-        chat_chain.invoke,
+    final_answer = ""
 
+    async for chunk in chat_chain.astream(
         {
             "resume_context": resume_context,
-
             "question": question
         },
-
         config={
             "configurable": {
                 "session_id": str(resume_id)
             }
         }
-    )
+    ):
+        
+        
+        token = chunk.content
+
+        final_answer += token
+
+        await manager.send(
+            resume_id,
+            {
+                "step":"stream",
+                "token": token
+            }
+        )
     
     await manager.send(
         resume_id,
         {
-            "step": "completed",
-            "answer": result.content
+            "step": "completed"
         }
     )
 
     return {
-        "answer": result.content
+        "answer": final_answer
     }
     
