@@ -1,0 +1,29 @@
+
+services:
+  back-end:
+    build:
+      context: ./back-end
+    container_name: back-end
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./back-end/.env
+
+    volumes:
+      - ./back-end/app:/app
+
+    working_dir: /app
+
+    restart: unless-stopped
+
+  front-end:
+    build:
+      context: ./front-end
+    container_name: front-end
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./front-end/.env  
+    depends_on:
+      - back-end
+    restart: unless-stopped

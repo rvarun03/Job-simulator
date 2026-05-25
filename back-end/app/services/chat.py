@@ -88,7 +88,7 @@ async def stream_chat_answer(
                 "token": token
             }
         )
-    
+
     await manager.send(
         resume_id,
         {
