@@ -15,6 +15,7 @@ export default function Navbar() {
     { href: "/Cover_letter", label: "Cover Letter" },
     { href: "/Job_match", label: "Job Match" },
     { href: "/Resume_Improvements", label: "Resume Improvements" },
+    { href: "/Chat", label: "Chat" },
   ];
 
   return (
