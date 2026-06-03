@@ -20,7 +20,7 @@ async def search_jobs_service(
         url = (
             "https://api.adzuna.com/v1/api/jobs/in/search/1"
         )
-
+    
         params = {
 
             "app_id":

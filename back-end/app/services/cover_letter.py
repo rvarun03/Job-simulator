@@ -47,6 +47,6 @@ async def generate_cover_letter(resume_id: int, job_description: str):
         }
     )
 
-    return result
+    return str(result)
         
 
