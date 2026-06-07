@@ -73,7 +73,7 @@ export default function Home() {
             <div className="rounded-md border border-white/10 bg-white/[0.03] p-4">
               <p className="text-sm text-zinc-500">Input</p>
               <p className="mt-1 text-xl font-semibold text-white">
-                Resume ID + Job Description
+                Resume ID optional + Job Description
               </p>
             </div>
             <div className="rounded-md border border-white/10 bg-white/[0.03] p-4">

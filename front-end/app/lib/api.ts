@@ -9,10 +9,18 @@ const getHeaders = () => {
 
 };
 
+const withOptionalResumeId = (
+    resume_id: number | undefined,
+    data: Record<string, string>
+) => ({
+    ...(resume_id ? { resume_id } : {}),
+    ...data,
+});
+
 export const api = {
 
     matchJob: async (
-        resume_id: number,
+        resume_id: number | undefined,
         job_description: string
     ) => {
 
@@ -23,10 +31,10 @@ export const api = {
 
                 headers: getHeaders(),
 
-                body: JSON.stringify({
+                body: JSON.stringify(withOptionalResumeId(
                     resume_id,
-                    job_description,
-                }),
+                    { job_description }
+                )),
             }
         );
 
@@ -41,7 +49,7 @@ export const api = {
     },
 
     generateResumeImprovements: async (
-        resume_id: number,
+        resume_id: number | undefined,
         job_description: string
     ) => {
 
@@ -52,10 +60,10 @@ export const api = {
 
                 headers: getHeaders(),
 
-                body: JSON.stringify({
+                body: JSON.stringify(withOptionalResumeId(
                     resume_id,
-                    job_description,
-                }),
+                    { job_description }
+                )),
             }
         );
 
@@ -72,7 +80,7 @@ export const api = {
     },
 
     generateCoverLetter: async (
-        resume_id: number,
+        resume_id: number | undefined,
         job_description: string
     ) => {
 
@@ -83,10 +91,10 @@ export const api = {
 
             headers: getHeaders(),
 
-            body: JSON.stringify({
+            body: JSON.stringify(withOptionalResumeId(
             resume_id,
-            job_description,
-            }),
+            { job_description }
+            )),
         }
         );
 
@@ -99,8 +107,8 @@ export const api = {
         return res.json();
     },
 
-    askQuestion: async (resume_id: number, question: string) => {
-        const body = JSON.stringify({ resume_id, question });
+    askQuestion: async (resume_id: number | undefined, question: string) => {
+        const body = JSON.stringify(withOptionalResumeId(resume_id, { question }));
         
         console.log("URL:", `${BASE_URL}/chat/ask`);
         console.log("Body:", body);  // Make sure this looks right
@@ -116,6 +124,8 @@ export const api = {
             console.error("422 detail:", err); // This tells you EXACTLY what field is wrong
             throw new Error("Failed");
         }
+
+        return res.json();
     }
 
 };

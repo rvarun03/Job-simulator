@@ -43,57 +43,61 @@ export default function ResumeImprovementPage() {
 
             setStatus("");
 
-            // OPEN WS FIRST
+            const numericResumeId = resumeId ? Number(resumeId) : undefined;
 
-            const ws = new WebSocket(
-                `ws://localhost:8000/ws/${resumeId}`
-            );
+            if (numericResumeId) {
+                // OPEN WS FIRST
 
-            wsRef.current = ws;
-
-            ws.onmessage = (event) => {
-
-                const data = JSON.parse(
-                    event.data
+                const ws = new WebSocket(
+                    `ws://localhost:8000/ws/${numericResumeId}`
                 );
 
-                // STEP UPDATES
+                wsRef.current = ws;
 
-                if (data.step) {
-                    setStatus(data.step);
-                }
+                ws.onmessage = (event) => {
 
-                // FINAL RESULT
+                    const data = JSON.parse(
+                        event.data
+                    );
 
-                if (data.result) {
-                    setResult(data.result);
-                }
-            };
+                    // STEP UPDATES
 
-            ws.onerror = () => {
+                    if (data.step) {
+                        setStatus(data.step);
+                    }
 
-                setError(
-                    "WebSocket failed"
-                );
-            };
+                    // FINAL RESULT
 
-        // WAIT FOR CONNECTION
+                    if (data.result) {
+                        setResult(data.result);
+                    }
+                };
 
-        await new Promise((resolve) => {
-            ws.onopen = resolve;
-        });
+                ws.onerror = () => {
+
+                    setError(
+                        "WebSocket failed"
+                    );
+                };
+
+                // WAIT FOR CONNECTION
+
+                await new Promise((resolve) => {
+                    ws.onopen = resolve;
+                });
+            }
             const data =
                 await api.generateResumeImprovements(
-                    Number(resumeId),
+                    numericResumeId,
                     jobDescription
                 );
 
             setResult(data);
 
-        } catch (err: any) {
+        } catch (err: unknown) {
 
             setError(
-                err.message ||
+                err instanceof Error ? err.message :
                 "Failed to generate improvements"
             );
 
@@ -201,12 +205,12 @@ export default function ResumeImprovementPage() {
                                 <label className="flex flex-col gap-2">
 
                                     <span className="text-sm font-medium text-zinc-300">
-                                        Resume ID
+                                        Resume ID (optional)
                                     </span>
 
                                     <input
                                         type="number"
-                                        placeholder="Enter Resume ID"
+                                        placeholder="Leave empty to use latest resume"
                                         value={resumeId}
                                         onChange={(e) =>
                                             setResumeId(

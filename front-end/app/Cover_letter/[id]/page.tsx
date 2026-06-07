@@ -1,7 +1,12 @@
 "use client";
 
-import { use, useEffect, useRef, useState } from "react";
+import { use, useState } from "react";
 import {api} from "../../lib/api";
+
+type CoverLetterResult = {
+  subject?: string;
+  cover_letter?: string;
+};
 
 export default function Page({
   params,
@@ -15,9 +20,7 @@ export default function Page({
   const [jobDescription, setJobDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState("");
-  const [result, setResult] = useState<any>(null);
-
-  const wsRef = useRef<WebSocket | null>(null);
+  const [result, setResult] = useState<CoverLetterResult | null>(null);
 
   // useEffect(() => {
   //   if (Number.isNaN(resumeId)) return;

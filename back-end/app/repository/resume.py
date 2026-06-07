@@ -13,3 +13,10 @@ def createresume(db:Session, structured_data: dict, raw_text: str):
     return resume
 
    
+def get_resume_by_id_or_latest(db: Session, resume_id: int | None = None):
+    query = db.query(Resume)
+
+    if resume_id is not None:
+        return query.filter(Resume.id == resume_id).first()
+
+    return query.order_by(Resume.id.desc()).first()

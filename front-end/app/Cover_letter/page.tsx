@@ -1,25 +1,25 @@
 "use client";
-import { use, useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import {api} from "../lib/api";
+
+type CoverLetterResult = {
+  subject?: string;
+  cover_letter?: string;
+};
 
 export default function Page() {
   const [resumeId, setResumeId] = useState<number | "">("");
   const [jobDescription, setJobDescription] = useState("");
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<CoverLetterResult | null>(null);
 
   const generateCoverLetter = async () => {
     try {
-      if (!resumeId) {
-        alert("Please enter resume ID");
-        return;
-      }
-
       setLoading(true);
       setResult(null);
 
       const res = await api.generateCoverLetter(
-        Number(resumeId),
+        resumeId ? Number(resumeId) : undefined,
         jobDescription
       );
 
@@ -54,7 +54,7 @@ export default function Page() {
         onChange={(e) =>
           setResumeId(e.target.value ? Number(e.target.value) : "")
         }
-        placeholder="Enter Resume ID"
+      placeholder="Resume ID (optional, latest if empty)"
         className="w-full border rounded-xl p-3"
       />
 

@@ -11,7 +11,10 @@ type Message = {
 
 export default function Chat() {
   const params = useParams();
-  const resumeId = Number(params.id);
+  const resumeId =
+    params.id === "latest"
+      ? undefined
+      : Number(params.id);
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [question, setQuestion] = useState("");
@@ -177,8 +180,6 @@ export default function Chat() {
       if (
         !question.trim()
         ||
-        !resumeId
-        ||
         isGeneratingRef.current
       )
         return;
@@ -211,10 +212,25 @@ export default function Chat() {
 
       try {
 
-        await api.askQuestion(
+        const data = await api.askQuestion(
           resumeId,
           q
         );
+
+        if (!resumeId && data?.answer) {
+          setMessages(
+            (prev) => [
+              ...prev,
+              {
+                role:
+                  "assistant",
+
+                text:
+                  data.answer
+              }
+            ]
+          );
+        }
 
         setIsGenerating(
           false

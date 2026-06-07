@@ -1,18 +1,27 @@
 import asyncio
+from sqlalchemy.orm import Session
 from services.FAISS import get_resume_context
 from chains.chat_chain import chat_chain
 from core.ws_manager import manager
+from repository.resume import get_resume_by_id_or_latest
 
 active_chat_ids: set[int] = set()
 
 
 async def ask_chat_question(
-        resume_id: int,
-        question: str
+        resume_id: int | None,
+        question: str,
+        db: Session
 ):
-    if resume_id in active_chat_ids:
+    resume = get_resume_by_id_or_latest(db, resume_id)
+    if not resume:
+        raise ValueError("Resume not found")
+
+    resolved_resume_id = resume.id
+
+    if resolved_resume_id in active_chat_ids:
         await manager.send(
-            resume_id,
+            resolved_resume_id,
             {
                 "step": "busy"
             }
@@ -23,15 +32,15 @@ async def ask_chat_question(
             "status": "busy"
         }
 
-    active_chat_ids.add(resume_id)
+    active_chat_ids.add(resolved_resume_id)
 
     try:
         return await stream_chat_answer(
-            resume_id,
+            resolved_resume_id,
             question
         )
     finally:
-        active_chat_ids.discard(resume_id)
+        active_chat_ids.discard(resolved_resume_id)
 
 
 async def stream_chat_answer(

@@ -1,15 +1,21 @@
 import asyncio
-from unittest import result
+from sqlalchemy.orm import Session
 from services.FAISS import get_resume_context
+from repository.resume import get_resume_by_id_or_latest
 from chains.cover_letter_chain import cover_letter_chain
 from core.ws_manager import manager
 
-async def generate_cover_letter(resume_id: int, job_description: str):
+async def generate_cover_letter(resume_id: int | None, job_description: str, db: Session):
+    resume = get_resume_by_id_or_latest(db, resume_id)
+    if not resume:
+        raise ValueError("Resume not found")
+
+    resolved_resume_id = resume.id
 
     # Step 1: Get resume context from FAISS
 
     await manager.send(
-        resume_id,
+        resolved_resume_id,
         {
             "step": "retrieving_resume_context"
         }
@@ -17,14 +23,14 @@ async def generate_cover_letter(resume_id: int, job_description: str):
 
     resume_context = await asyncio.to_thread(
         get_resume_context,
-        resume_id,
+        resolved_resume_id,
         job_description
     )
 
     # Step 2 LLM Generation
 
     await manager.send(
-        resume_id,
+        resolved_resume_id,
         {
             "step": "generating_cover_letter"
         }
@@ -40,7 +46,7 @@ async def generate_cover_letter(resume_id: int, job_description: str):
     print(result)
     # STEP 3
     await manager.send(
-        resume_id,
+        resolved_resume_id,
         {
             "step": "completed",
             "result": result
@@ -49,4 +55,3 @@ async def generate_cover_letter(resume_id: int, job_description: str):
 
     return str(result)
         
-

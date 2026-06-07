@@ -12,11 +12,7 @@ export default function ChatStart() {
 
     const trimmedResumeId = resumeId.trim();
 
-    if (!trimmedResumeId) {
-      return;
-    }
-
-    router.push(`/Chat/${trimmedResumeId}`);
+    router.push(`/Chat/${trimmedResumeId || "latest"}`);
   };
 
   return (
@@ -44,13 +40,13 @@ export default function ChatStart() {
         >
           <label className="flex flex-col gap-2">
             <span className="text-sm font-medium text-zinc-300">
-              Resume ID
+              Resume ID (optional)
             </span>
             <input
               type="number"
               value={resumeId}
               onChange={(event) => setResumeId(event.target.value)}
-              placeholder="Enter resume ID"
+              placeholder="Leave empty to use latest resume"
               className="h-12 rounded-md border border-white/10 bg-zinc-900 px-4 text-base text-white outline-none transition placeholder:text-zinc-600 focus:border-cyan-300 focus:ring-4 focus:ring-cyan-300/10"
             />
           </label>
@@ -58,7 +54,6 @@ export default function ChatStart() {
           <button
             type="submit"
             className="flex h-12 items-center justify-center rounded-md bg-cyan-300 px-5 text-sm font-bold text-zinc-950 transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-400"
-            disabled={!resumeId.trim()}
           >
             Open Chat
           </button>

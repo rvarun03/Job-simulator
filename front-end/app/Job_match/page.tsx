@@ -1,6 +1,6 @@
 "use client";
 import {api} from "../lib/api";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 type MatchResult = {
     match_score: number;
@@ -73,44 +73,49 @@ export default function Home() {
         setResult(null);
         setStatus("");
 
-        // 1. OPEN WS FIRST
-        const ws = new WebSocket(
-            `ws://localhost:8000/ws/${resumeId}`
-        );
+        const numericResumeId = resumeId ? Number(resumeId) : undefined;
 
-        wsRef.current = ws;
+        if (numericResumeId) {
+            // 1. OPEN WS FIRST
+            const ws = new WebSocket(
+                `ws://localhost:8000/ws/${numericResumeId}`
+            );
 
-        ws.onmessage = (event) => {
+            wsRef.current = ws;
 
-            const data = JSON.parse(event.data);
+            ws.onmessage = (event) => {
 
-            if (data.step) {
-                setStatus(data.step);
-            }
+                const data = JSON.parse(event.data);
 
-            if (data.result) {
-                setResult(data.result);
-            }
-        };
+                if (data.step) {
+                    setStatus(data.step);
+                }
 
-        ws.onerror = () => {
-            setError("WebSocket failed");
-        };
+                if (data.result) {
+                    setResult(data.result);
+                }
+            };
 
-        // WAIT FOR CONNECTION READY (IMPORTANT)
-        await new Promise((resolve) => {
-            ws.onopen = resolve;
-        });
+            ws.onerror = () => {
+                setError("WebSocket failed");
+            };
+
+            // WAIT FOR CONNECTION READY (IMPORTANT)
+            await new Promise((resolve) => {
+                ws.onopen = resolve;
+            });
+        }
 
         // 2. NOW CALL API
-        await api.matchJob(
-            Number(resumeId),
+        const data = await api.matchJob(
+            numericResumeId,
             jobDescription
         );
+        setResult(data);
 
-    } catch (err: any) {
+    } catch (err: unknown) {
 
-        setError(err.message || "Error");
+        setError(err instanceof Error ? err.message : "Error");
 
     } finally {
 
@@ -163,7 +168,7 @@ export default function Home() {
 
                                 <div className="rounded-md border border-white/10 bg-white/[0.03] p-3">
                                     <p className="text-xs text-zinc-500">Input</p>
-                                    <p className="mt-1 font-semibold text-zinc-100">Resume ID</p>
+                                    <p className="mt-1 font-semibold text-zinc-100">Latest Resume</p>
                                 </div>
 
                                 <div className="rounded-md border border-white/10 bg-white/[0.03] p-3">
@@ -187,12 +192,12 @@ export default function Home() {
                                 <label className="flex flex-col gap-2">
 
                                     <span className="text-sm font-medium text-zinc-300">
-                                        Resume ID
+                                        Resume ID (optional)
                                     </span>
 
                                     <input
                                         type="number"
-                                        placeholder="Enter resume ID"
+                                        placeholder="Leave empty to use latest resume"
                                         className="h-12 rounded-md border border-white/10 bg-zinc-900 px-4 text-base text-white outline-none transition placeholder:text-zinc-600 focus:border-cyan-300 focus:ring-4 focus:ring-cyan-300/10"
                                         value={resumeId}
                                         onChange={(e) =>
