@@ -2,6 +2,13 @@ import Link from "next/link";
 
 const features = [
   {
+    title: "Resume Upload",
+    description:
+      "Upload a PDF or DOCX resume and save it for cover letters, matching, improvements, and chat.",
+    href: "/resume/upload",
+    cta: "Upload resume",
+  },
+  {
     title: "Cover Letter Generator",
     description:
       "Create a tailored cover letter from your saved resume and a job description.",

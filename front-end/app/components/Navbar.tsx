@@ -12,6 +12,7 @@ export default function Navbar() {
 
   const navItems = [
     { href: "/", label: "Home" },
+    { href: "/resume/upload", label: "Upload Resume" },
     { href: "/Cover_letter", label: "Cover Letter" },
     { href: "/Job_match", label: "Job Match" },
     { href: "/Resume_Improvements", label: "Resume Improvements" },

@@ -17,6 +17,30 @@ const withOptionalResumeId = (
     ...data,
 });
 
+const parsePythonDictString = (value: string) => {
+    const getStringField = (key: string) => {
+        const match = value.match(new RegExp(`'${key}'\\s*:\\s*'((?:\\\\.|[^'])*)'`));
+        return match?.[1]?.replace(/\\'/g, "'").replace(/\\"/g, "\"");
+    };
+
+    return {
+        subject: getStringField("subject"),
+        cover_letter: getStringField("cover_letter"),
+    };
+};
+
+const normalizeCoverLetterResponse = (data: unknown) => {
+    if (typeof data !== "string") {
+        return data;
+    }
+
+    try {
+        return JSON.parse(data);
+    } catch {
+        return parsePythonDictString(data);
+    }
+};
+
 export const api = {
 
     matchJob: async (
@@ -102,6 +126,23 @@ export const api = {
         throw new Error(
             "Failed to generate cover letter"
         );
+        }
+
+        const data = await res.json();
+        return normalizeCoverLetterResponse(data);
+    },
+
+    uploadResume: async (file: File) => {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const res = await fetch(`${BASE_URL}/resume/upload`, {
+            method: "POST",
+            body: formData,
+        });
+
+        if (!res.ok) {
+            throw new Error("Failed to upload resume");
         }
 
         return res.json();
