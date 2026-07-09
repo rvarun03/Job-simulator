@@ -14,6 +14,7 @@ from routes.job_search import router as job_search_router  # Import the job sear
 from routes.chat import router as chat_router
 from routes.copilot import router as copilot_router
 from routes.auth import router as auth_router
+from routes.candidate_ranking import router as candidate_ranking_router
 
 app = FastAPI()
 setup_cors(app)
@@ -29,6 +30,7 @@ app.include_router(job_search_router)  # Include the job search router
 app.include_router(chat_router)
 app.include_router(copilot_router)
 app.include_router(auth_router)
+app.include_router(candidate_ranking_router)
 
 @app.get("/")
 def root():
