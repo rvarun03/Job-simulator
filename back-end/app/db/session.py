@@ -4,7 +4,7 @@ from core.config import database_url
 
 engine= create_engine(
     database_url,
-    connect_args={"check_same_thread": False}  # needed for SQLite + FastAPI)  
+    
     )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
