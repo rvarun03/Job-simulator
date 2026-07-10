@@ -5,6 +5,33 @@ from utils.pdf_file_reader import extract_pdf_text
 from services.tfidf import calculate_tfidf_cosine_score
 from chains.candidate_ranking_chain import candidate_ranking_chain
 
+
+def normalize_string_list(value) -> list[str]:
+    if isinstance(value, list):
+        return [
+            str(item).strip()
+            for item in value
+            if str(item).strip()
+        ]
+
+    if isinstance(value, str) and value.strip():
+        return [value.strip()]
+
+    return []
+
+
+def calculate_skill_match_score(
+    matching_skills: list[str],
+    missing_skills: list[str]
+) -> float:
+    total_skills = len(matching_skills) + len(missing_skills)
+
+    if total_skills == 0:
+        return 0.0
+
+    return round(float(len(matching_skills) / total_skills * 100), 2)
+
+
 def calculate_final_score(
     ai_score: int,
     tfidf_score: float
@@ -25,7 +52,7 @@ async def rank_candidates(
 
     for resume in resumes:
 
-        resume_text=extract_pdf_text(resume)
+        resume_text=await extract_pdf_text(resume)
 
         tfidf_score=await asyncio.to_thread(
             calculate_tfidf_cosine_score,
@@ -44,6 +71,20 @@ async def rank_candidates(
 
         ai_score = int(ai_result.get("ai_score", 0))
 
+        matching_skills = normalize_string_list(
+            ai_result.get(
+                "matching_skills",
+                ai_result.get("matched_skills", [])
+            )
+        )
+        missing_skills = normalize_string_list(
+            ai_result.get("missing_skills", [])
+        )
+        skill_match_score = calculate_skill_match_score(
+            matching_skills=matching_skills,
+            missing_skills=missing_skills
+        )
+
         final_score = calculate_final_score(
             ai_score=ai_score,
             tfidf_score=tfidf_score
@@ -59,9 +100,16 @@ async def rank_candidates(
                 "final_score": final_score,
                 "ai_score": ai_score,
                 "tfidf_score": tfidf_score,
-                "strengths": ai_result.get("strengths", []),
-                "concerns": ai_result.get("concerns", []),
-                "summary": ai_result.get("summary", "")
+                "skill_match_score": skill_match_score,
+                "matching_skills": matching_skills,
+                "missing_skills": missing_skills,
+                "strengths": normalize_string_list(
+                    ai_result.get("strengths", [])
+                ),
+                "concerns": normalize_string_list(
+                    ai_result.get("concerns", [])
+                ),
+                "summary": str(ai_result.get("summary", "") or "")
             }
         )
 
@@ -80,4 +128,4 @@ async def rank_candidates(
             }
         )
 
-    return ranked_results    
+    return ranked_results

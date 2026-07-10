@@ -5,43 +5,43 @@ import spacy
 class TextPreprocessor:
 
     def __init__(self):
-        self.nlp=spacy.load("en_core_web_sm")
+        self.nlp = spacy.load("en_core_web_sm")
 
-    def basic_clean(self,text: str) -> str:
+    def basic_clean(self, text: str) -> str:
         
-        text=unicodedata.normalize("NFKC", text)
-        text=text.lower()
-        text=re.sub(r"\s+"," ",text)
+        text = unicodedata.normalize("NFKC", text)
+        text = text.lower()
+        text = re.sub(r"\s+", " ", text)
         text = re.sub(r"[^a-zA-Z0-9+#.\s-]", " ", text)
         return text.strip()
     
-    def process_for_tfidf(self,text:str) ->str:
+    def process_for_tfidf(self, text: str) -> str:
 
-        cleaned_text=self.basic_clean(text)
+        cleaned_text = self.basic_clean(text)
 
-        doc=self.nlp(cleaned_text)
+        doc = self.nlp(cleaned_text)
 
-        tokens=[]
+        tokens = []
 
         for token in doc:
 
-            if not doc.is_stop:
+            if token.is_stop:
                 continue
 
-            if not doc.is_punct:
+            if token.is_punct:
                 continue
 
-            if not doc.is_space:
+            if token.is_space:
                 continue
 
-            if not token.text_strip():
+            if not token.text.strip():
                 continue
 
-            lemma=token.lemma_.strip().lower()
+            lemma = token.lemma_.strip().lower()
 
             if not lemma:
                 continue
 
             tokens.append(lemma)
 
-        return "".join(tokens)    
+        return " ".join(tokens)

@@ -22,6 +22,9 @@ STRICT RULES:
 - Do not give high score just because keywords match
 - Penalize missing must-have skills
 - Reward relevant project/work experience
+- Extract technical skills from the job description
+- Put skills explicitly found in the resume in matching_skills
+- Put job-description skills not found in the resume in missing_skills
 """
         ),
         (
@@ -42,6 +45,8 @@ Return ONLY this JSON format:
     "candidate_name": "string",
     "ai_score": 0,
     "summary": "string",
+    "matching_skills": ["string"],
+    "missing_skills": ["string"],
     "strengths": ["string"],
     "concerns": ["string"]
 }}

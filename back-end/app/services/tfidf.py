@@ -9,6 +9,9 @@ def calculate_tfidf_cosine_score(jd_text:str, resume_text:str):
     processed_jd=text_preprocessor.process_for_tfidf(jd_text)
     processed_resume=text_preprocessor.process_for_tfidf(resume_text)
 
+    if not processed_jd or not processed_resume:
+        return 0.0
+
     documents=[
         processed_jd,
         processed_resume
