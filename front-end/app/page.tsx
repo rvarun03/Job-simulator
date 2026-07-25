@@ -2,6 +2,13 @@ import Link from "next/link";
 
 const features = [
   {
+    title: "Account Access",
+    description:
+      "Login or register as a job seeker or HR user and continue into the right workflow.",
+    href: "/login",
+    cta: "Login or register",
+  },
+  {
     title: "Resume Upload",
     description:
       "Upload a PDF or DOCX resume and save it for cover letters, matching, improvements, and chat.",
@@ -36,6 +43,13 @@ const features = [
     href: "/Chat",
     cta: "Open chat",
   },
+  {
+    title: "Candidate Ranking",
+    description:
+      "Upload multiple candidate resumes and rank them against a job description for HR screening.",
+    href: "/candidate-ranking",
+    cta: "Rank candidates",
+  },
 ];
 
 export default function Home() {
@@ -62,16 +76,16 @@ export default function Home() {
 
             <div className="flex flex-col gap-3 sm:flex-row">
               <Link
-                href="/Job_match"
+                href="/login"
                 className="flex h-12 items-center justify-center rounded-md bg-blue-600 px-5 text-sm font-semibold text-white transition hover:bg-blue-500"
               >
-                Start with Job Match
+                Login
               </Link>
               <Link
-                href="/Chat"
+                href="/candidate-ranking"
                 className="flex h-12 items-center justify-center rounded-md border border-white/15 px-5 text-sm font-semibold text-zinc-100 transition hover:bg-white/10"
               >
-                Open Resume Chat
+                Rank Candidates
               </Link>
             </div>
           </div>
