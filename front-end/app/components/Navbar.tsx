@@ -11,18 +11,16 @@ import {
   subscribeToAuthSession,
 } from "../lib/api";
 
-const guestNavItems = [
-  { href: "/login", label: "Login" },
-  { href: "/register", label: "Register" },
-];
-
-const toolNavItems = [
+const userNavItems = [
   { href: "/resume/upload", label: "Upload Resume" },
   { href: "/Cover_letter", label: "Cover Letter" },
   { href: "/Job_match", label: "Job Match" },
   { href: "/Resume_Improvements", label: "Resume Improvements" },
-  { href: "/candidate-ranking", label: "Candidate Ranking" },
   { href: "/Chat", label: "Chat" },
+];
+
+const hrNavItems = [
+  { href: "/candidate-ranking", label: "Candidate Ranking" },
 ];
 
 export default function Navbar() {
@@ -42,8 +40,7 @@ export default function Navbar() {
 
   const navItems = [
     { href: "/", label: "Home" },
-    ...(!session ? guestNavItems : []),
-    ...toolNavItems,
+    ...(session?.role === "HR" ? hrNavItems : userNavItems),
   ];
 
   const linkClassName = (href: string, isMobile = false) => (

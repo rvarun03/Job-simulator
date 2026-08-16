@@ -1,13 +1,15 @@
-import Link from "next/link";
+"use client";
 
-const features = [
-  {
-    title: "Account Access",
-    description:
-      "Login or register as a job seeker or HR user and continue into the right workflow.",
-    href: "/login",
-    cta: "Login or register",
-  },
+import Link from "next/link";
+import { useSyncExternalStore } from "react";
+import {
+  getAuthSessionFromSnapshot,
+  getAuthSessionSnapshot,
+  getServerAuthSessionSnapshot,
+  subscribeToAuthSession,
+} from "./lib/api";
+
+const userFeatures = [
   {
     title: "Resume Upload",
     description:
@@ -42,7 +44,10 @@ const features = [
       "Ask questions about a saved resume and get focused answers through the chat assistant.",
     href: "/Chat",
     cta: "Open chat",
-  },
+  }
+];
+
+const hrFeatures = [
   {
     title: "Candidate Ranking",
     description:
@@ -53,6 +58,15 @@ const features = [
 ];
 
 export default function Home() {
+  const authSessionSnapshot = useSyncExternalStore(
+    subscribeToAuthSession,
+    getAuthSessionSnapshot,
+    getServerAuthSessionSnapshot
+  );
+  const session = getAuthSessionFromSnapshot(authSessionSnapshot);
+  const isHr = session?.role === "HR";
+  const features = isHr ? hrFeatures : userFeatures;
+
   return (
     <main className="min-h-screen bg-zinc-950 px-4 py-10 text-zinc-100 sm:px-6 lg:px-8">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-10">
@@ -64,28 +78,24 @@ export default function Home() {
 
             <div className="space-y-4">
               <h1 className="max-w-3xl text-4xl font-semibold tracking-tight text-white sm:text-5xl">
-                Your AI workspace for faster, sharper job applications.
+                {isHr
+                  ? "Rank the strongest candidates faster."
+                  : "Your AI workspace for faster, sharper job applications."}
               </h1>
 
               <p className="max-w-2xl text-base leading-8 text-zinc-400 sm:text-lg">
-                Use your saved resume to generate personalized cover letters,
-                check how well you match a job description, improve your resume
-                for ATS systems, and chat with an assistant about your resume.
+                {isHr
+                  ? "Upload candidate resumes, compare them against the job description, and review an AI-assisted ranking for your hiring workflow."
+                  : "Use your saved resume to generate personalized cover letters, check how well you match a job description, improve your resume for ATS systems, and chat with an assistant about your resume."}
               </p>
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row">
               <Link
-                href="/login"
+                href={isHr ? "/candidate-ranking" : "/resume/upload"}
                 className="flex h-12 items-center justify-center rounded-md bg-blue-600 px-5 text-sm font-semibold text-white transition hover:bg-blue-500"
               >
-                Login
-              </Link>
-              <Link
-                href="/candidate-ranking"
-                className="flex h-12 items-center justify-center rounded-md border border-white/15 px-5 text-sm font-semibold text-zinc-100 transition hover:bg-white/10"
-              >
-                Rank Candidates
+                {isHr ? "Rank Candidates" : "Upload Resume"}
               </Link>
             </div>
           </div>
@@ -94,13 +104,17 @@ export default function Home() {
             <div className="rounded-md border border-white/10 bg-white/[0.03] p-4">
               <p className="text-sm text-zinc-500">Input</p>
               <p className="mt-1 text-xl font-semibold text-white">
-                Resume ID optional + Job Description
+                {isHr
+                  ? "Candidate Resumes + Job Description"
+                  : "Resume ID optional + Job Description"}
               </p>
             </div>
             <div className="rounded-md border border-white/10 bg-white/[0.03] p-4">
               <p className="text-sm text-zinc-500">AI Helps With</p>
               <p className="mt-1 text-xl font-semibold text-white">
-                Matching, writing, optimization, and Q&A
+                {isHr
+                  ? "Screening, comparison, and ranking"
+                  : "Matching, writing, optimization, and Q&A"}
               </p>
             </div>
             <div className="rounded-md border border-white/10 bg-white/[0.03] p-4">
@@ -118,7 +132,9 @@ export default function Home() {
               Available Features
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
-              Jump directly into any tool from here.
+              {isHr
+                ? "Open the candidate screening tool available to HR accounts."
+                : "Jump directly into any job-seeker tool from here."}
             </p>
           </div>
 

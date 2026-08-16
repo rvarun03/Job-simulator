@@ -283,6 +283,12 @@ export const api = {
         job_description: string,
         resumes: File[]
     ): Promise<CandidateRankResponse[]> => {
+        const session = getAuthSession();
+
+        if (!session) {
+            throw new Error("Please log in with an HR account to rank candidates");
+        }
+
         const formData = new FormData();
         formData.append("job_description", job_description);
 
@@ -294,6 +300,9 @@ export const api = {
             `${BASE_URL}/hr/candidates/rank`,
             {
                 method: "POST",
+                headers: {
+                    Authorization: `${session.tokenType} ${session.accessToken}`,
+                },
                 body: formData,
             }
         );

@@ -36,7 +36,7 @@ export default function RegisterPage() {
 
       saveAuthSession(data);
 
-      router.push(data.role === "HR" ? "/candidate-ranking" : "/resume/upload");
+      router.push("/");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to register");
     } finally {
