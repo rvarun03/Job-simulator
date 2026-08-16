@@ -10,45 +10,6 @@ The retrieved evidence supports structured match analysis, missing-skill identif
 
 The generated scores and recommendations are assistive signals. They are not objective measures of candidate quality and should not replace human review or hiring decisions.
 
-## Implementation status
-
-### Implemented
-
-- PDF and DOCX upload for the primary resume-ingestion workflow
-- Text extraction with `pdfplumber` and `python-docx`
-- LangChain `Document` objects with source metadata
-- Recursive 500-character chunks with 50-character overlap
-- `sentence-transformers/all-MiniLM-L6-v2` embeddings
-- One disk-backed FAISS index per stored resume
-- Top-five semantic retrieval using a job description or user question
-- JSON-parsed LLM outputs for matching, improvement suggestions, cover letters, resume parsing, and candidate evaluation
-- Match score, matched skills, missing skills, reasoning, and recommendations
-- Multi-resume PDF ranking using LLM and TF-IDF scores
-- JWT registration/login, bcrypt password hashes, and `USER`/`HR` roles
-- HR-only authorization on candidate ranking
-- SQLAlchemy persistence for users and resumes, plus a job-match model/repository intended for the legacy raw-text analysis route
-- WebSocket progress/status messages for match, improvement, cover-letter, and chat workflows
-- Resume-grounded chat with in-memory conversation history
-- Next.js interfaces for authentication, upload, matching, improvement, cover letters, chat, and candidate ranking
-- Configurable Ollama or Groq chat-model provider
-- Adzuna-backed job-search API and a tool-using career copilot API
-
-### Partially implemented
-
-- **Authorization:** JWT validation and role checks protect candidate ranking only. Other resume and AI routes do not require authentication, and resumes are not associated with owners.
-- **Candidate file support:** the ranking UI accepts PDF, DOC, and DOCX, but the backend ranking service parses every candidate as PDF.
-- **Real-time updates:** the backend emits WebSocket events, but some frontend socket code is commented out and active pages use a hard-coded `ws://localhost:8000` URL.
-- **Persistence:** raw resumes and users are stored in SQL; FAISS indexes are local files. Most generated RAG results are returned directly rather than stored. The separate `/analyze-job/` route does persist its raw-text analysis.
-- **Asynchronous execution:** several async routes move retrieval, scoring, or blocking LLM calls to worker threads. Candidate files are still processed sequentially, and there is no durable task queue.
-- **Docker:** backend and frontend Dockerfiles plus a Compose topology exist, and the Compose file passes schema validation. The frontend's `NEXT_PUBLIC_API_BASE_URL` is a build-time value but Compose currently supplies its env file at runtime, so the containerized UI needs configuration hardening before it can be presented as a reliable one-command setup.
-- **Automated testing:** the repository contains one backend root-endpoint test. `pytest` is not declared in `backend/requirements.txt`, and there are no frontend tests.
-- **Legacy raw-text analysis:** `/analyze-job/` is wired into FastAPI, but its service supplies `resume_data` to a chain that requires `resume_context`. It is currently expected to fail before saving a `JobMatch` record.
-- **Job search/copilot:** their routes and tools exist, but they have no dedicated frontend pages or automated tests. The copilot's job-search tool also expects a dictionary from a chain that normally returns a LangChain message, so this integration needs verification.
-
-### Planned improvements
-
-See the [Roadmap](#roadmap) for concrete next steps.
-
 ## Key features
 
 | Area | Verified behavior |
@@ -144,7 +105,6 @@ The `skill_match_score` is returned for display but is not part of the final-sco
 | Next.js 16, React 19, TypeScript | Browser interface |
 | Tailwind CSS 4 | Frontend styling |
 | Docker and Docker Compose | Container definitions for frontend, backend, and PostgreSQL |
-| Adzuna API | External job search used by `/jobs/search` and the copilot tool |
 
 ## System architecture
 
@@ -153,7 +113,7 @@ The `skill_match_score` is returned for display but is not part of the final-sco
 - **API layer — `backend/routes/`:** FastAPI controllers validate inputs, obtain database sessions, and call service functions.
 - **Resume-processing layer — `backend/services/resume.py`, `backend/utils/file_parser.py`:** extracts PDF/DOCX text, persists resume records, and starts indexing.
 - **Retrieval layer — `backend/utils/RAG_splitter.py`, `backend/core/embeddings.py`, `backend/services/FAISS.py`:** chunks documents, creates embeddings, saves indexes, and retrieves context.
-- **LLM layer — `backend/chains/`:** contains prompts and JSON parsers for parsing, matching, improvements, ranking, cover letters, chat, job search, and copilot behavior.
+- **LLM layer — `backend/chains/`:** contains prompts and JSON parsers for parsing, matching, improvements, ranking, cover letters, chat, and copilot behavior.
 - **Candidate-ranking layer — `backend/services/candidate_ranking_service.py`:** coordinates PDF parsing, TF-IDF scoring, LLM evaluation, weighting, and sorting.
 - **Persistence layer — `backend/db/`, `backend/models/`, `backend/repository/`:** manages users and raw resumes and defines the currently broken legacy job-match write path with SQLAlchemy.
 - **Real-time layer — `backend/core/ws_manager.py`:** maintains one in-memory socket per resume ID and sends workflow events.
@@ -171,7 +131,7 @@ The `skill_match_score` is returned for display but is not part of the final-sco
 │   ├── repository/          # Resume and job-match database operations
 │   ├── routes/              # FastAPI HTTP and WebSocket endpoints
 │   ├── schemas/             # Pydantic request and response types
-│   ├── services/            # RAG, matching, ranking, chat, job search, and generation logic
+│   ├── services/            # RAG, matching, ranking, chat, and generation logic
 │   ├── tests/               # Minimal API test suite
 │   ├── tools/               # LangChain tools exposed to the career copilot
 │   ├── utils/               # File extraction, PDF ranking reader, and text splitting
@@ -281,8 +241,6 @@ The checked-in `backend/.env.example` contains only `DATABASE_URL`; the remainin
 | `OLLAMA_MODEL` | Local model name | When provider is Ollama | `your-local-model` |
 | `GROQ_API_KEY` | Groq credential | When provider is Groq | `replace-with-your-key` |
 | `GROQ_MODEL` | Groq model identifier | When provider is Groq | `replace-with-supported-model` |
-| `ADZUNA_APP_ID` | Adzuna application ID | For job search only | `replace-with-app-id` |
-| `ADZUNA_APP_KEY` | Adzuna application key | For job search only | `replace-with-app-key` |
 | `NEXT_PUBLIC_API_BASE_URL` | Browser-visible FastAPI base URL | Yes for frontend API calls | `http://127.0.0.1:8000` |
 
 Example `backend/.env` for local Ollama use:
@@ -291,10 +249,6 @@ Example `backend/.env` for local Ollama use:
 DATABASE_URL=sqlite:///./app.db
 LLM_PROVIDER=ollama
 OLLAMA_MODEL=your-local-model
-
-# Optional: required only by /jobs/search and the job-search copilot tool
-ADZUNA_APP_ID=replace-with-app-id
-ADZUNA_APP_KEY=replace-with-app-key
 ```
 
 The JWT signing secret is currently hard-coded in `backend/core/security.py`; there is no environment variable for it yet. This must be corrected before deployment.
@@ -328,7 +282,6 @@ Unless noted otherwise, the current routes do **not** require authentication.
 | --- | --- | --- | --- | --- |
 | `POST` | `/hr/candidates/rank` | Rank multiple candidate PDFs against one JD | Multipart `job_description` and repeated `resumes` | Bearer JWT; `HR` role |
 | `POST` | `/analyze-job/` | Experimental raw-text parse/match route; currently broken by a chain input-key mismatch and does not reach persistence | JSON: `resume_text`, `job_description` | No |
-| `POST` | `/jobs/search` | Query Adzuna and ask the LLM to format results | JSON: `query`, optional `location` | No |
 | `POST` | `/copilot/` | Route a career request to available LangChain tools | JSON: `prompt`, optional `resume_id`, `job_description`, `location` | No |
 | `GET` | `/` | Basic API status message | None | No |
 
@@ -505,44 +458,11 @@ The HR view displays ranked candidates with final, AI, TF-IDF, and skill scores 
 - CORS is unrestricted, the JWT secret is hard-coded, and tokens are stored in browser local storage.
 - Raw resume chunks and selected generated content are printed to backend logs.
 - Database tables are created directly at startup; there are no schema migrations.
-- The external LLM/embedding model and Adzuna integrations require local model availability, model downloads, network access, or third-party credentials.
+- External LLM and embedding integrations require local model availability, model downloads, network access, or third-party credentials.
 - Automated coverage is limited to one root-endpoint test; `pytest` is not in backend requirements and no frontend test suite exists.
 - The Docker setup needs build-time frontend configuration and secret handling improvements.
-- The legacy raw-text analysis route has a prompt-variable mismatch, and the copilot job-search tool has an unverified response-type assumption.
+- The legacy raw-text analysis route has a prompt-variable mismatch.
 - No production deployment, monitoring, or model-quality evaluation is included.
-
-## Roadmap
-
-### Current implementation
-
-- [x] PDF and DOCX resume ingestion for the primary workflow
-- [x] Recursive chunking, MiniLM embeddings, and per-resume FAISS indexes
-- [x] Semantic retrieval and structured RAG match analysis
-- [x] Resume improvement and cover-letter chains
-- [x] Resume-grounded chat and WebSocket events
-- [x] JWT login/registration and HR-only candidate ranking
-- [x] TF-IDF plus LLM candidate ranking with explicit weighting
-- [x] SQLite/PostgreSQL-compatible SQLAlchemy persistence
-- [x] Next.js user and HR interfaces
-- [x] Basic backend CI workflow
-
-### Future work
-
-- [ ] Associate resumes, analyses, and vector indexes with authenticated owners
-- [ ] Protect all personal-data routes and prevent self-assigned privileged roles
-- [ ] Move JWT/database secrets into validated environment configuration
-- [ ] Add file-size, MIME/content, malware, and candidate-file validation
-- [ ] Persist analysis, cover-letter, chat, and ranking history
-- [ ] Add index/data deletion and retention controls
-- [ ] Introduce Alembic migrations
-- [ ] Move long-running work to a durable background task queue
-- [ ] Replace process-local chat/WebSocket state with shared storage
-- [ ] Add unit, integration, authorization, WebSocket, and frontend tests
-- [ ] Add representative evaluation datasets and monitor ranking quality/bias
-- [ ] Harden Docker configuration and add deployment automation
-- [ ] Add structured logging, tracing, metrics, and error monitoring
-- [x] Add feature screenshots and job-seeker/HR demo recordings
-- [ ] Add a public deployment URL
 
 ## Learning outcomes
 
@@ -558,11 +478,3 @@ This repository demonstrates:
 - Implementing password hashing, JWT authentication, and a role-protected workflow
 - Offloading blocking AI/retrieval work from async endpoints and streaming chat events
 - Integrating a Python AI backend with a typed Next.js frontend
-
-## Author
-
-**Varun R**
-
-- GitHub: _Add public profile URL_
-- LinkedIn: _Add public profile URL_
-- Email: _Add only if you want to publish a contact address_
