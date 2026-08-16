@@ -1,52 +1,59 @@
-from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.prompts import ChatPromptTemplate
 
 from core.llm import get_llm
 
 llm = get_llm()
 
 prompt = ChatPromptTemplate.from_template("""
-You are a strict ATS resume-job matching system.
+You are a precise resume-to-job skill comparison system.
 
-TASK:
-1. Extract technical skills explicitly mentioned in the job description
-2. Compare them against the resume context
-3. A skill is matched ONLY if it explicitly exists in the resume context
-4. Do NOT infer related technologies
-5. Do NOT hallucinate skills
+Your job is to extract individual technical requirements from the job description and
+verify each one against the supplied resume evidence.
 
-SCORING RULES:
-- If 100% skills match → score 90-100
-- If most skills match → score 60-89
-- If few skills match → score 30-59
-- If NO skills match → score MUST be 0
+SKILL EXTRACTION RULES:
+- Return atomic skill names, not requirement sentences.
+- "Strong knowledge of Python" becomes "Python".
+- "Hands-on experience with FastAPI and RESTful API development" becomes
+  "FastAPI" and "REST APIs".
+- "Understanding of asynchronous programming and WebSockets" becomes
+  "Asynchronous programming" and "WebSockets".
+- Remove wording such as "experience with", "knowledge of", "familiarity with",
+  "understanding of", "hands-on", and "experience working with".
+- Do not classify years of experience, responsibilities, soft skills, or degree
+  requirements as technical skills.
+- For an alternative such as "FAISS or ChromaDB", consider the requirement satisfied
+  if either technology is explicitly present. Do not penalize the absent alternative.
 
-IMPORTANT RULES:
-- Never include a missing skill in matched_skills
-- If a skill is not present in the resume context, it MUST go into missing_skills
-- If matched_skills is empty, match_score MUST be 0
-- Only use exact skills from the job description
-- Return ONLY valid JSON
-- No markdown
-- No trailing commas
+MATCHING RULES:
+- Search all resume evidence, including skills, projects, and work experience.
+- Match case-insensitively and accept unambiguous formatting variants:
+  Next.js/NextJS, REST API/RESTful API, JWT/JSON Web Token, PostgreSQL/Postgres,
+  Hugging Face/HuggingFace, and async/asynchronous programming.
+- A technology explicitly present anywhere in the resume is matched. The complete
+  job-description sentence does not need to appear in the resume.
+- Do not infer unrelated skills: Python does not prove FastAPI, and general cloud
+  knowledge does not prove AWS.
+- Put every extracted technical requirement in exactly one list.
+- Never place the same skill in both lists.
+- Recommendations must address genuinely missing skills only.
+- Do not estimate the final score; the backend computes it deterministically.
 
-Format:
+Return ONLY valid JSON with this structure, without markdown or trailing commas:
 
 {{
-    "match_score": 0,
-    "matched_skills": [],
-    "missing_skills": [],
-    "reasoning": "",
-    "recommendations": []
+  "match_score": 0,
+  "matched_skills": ["atomic skill name"],
+  "missing_skills": ["atomic skill name"],
+  "reasoning": "brief evidence-based explanation",
+  "recommendations": ["specific recommendation"]
 }}
 
-Resume Context:
+Resume Evidence:
 {resume_context}
 
 Job Description:
 {job_description}
 """)
 
-parser = JsonOutputParser()
-
-job_match_chain = prompt | llm | parser
+job_match_chain = prompt | llm | JsonOutputParser()

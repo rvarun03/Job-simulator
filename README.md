@@ -56,7 +56,7 @@ See the [Roadmap](#roadmap) for concrete next steps.
 | Resume ingestion | Accepts `.pdf` and `.docx`, extracts text, rejects unsupported extensions and empty extracted content, and stores the raw text and source metadata. |
 | Chunking and embeddings | Uses `RecursiveCharacterTextSplitter` and Hugging Face MiniLM embeddings. |
 | Vector search | Saves each resume under `backend/vectorstore/faiss/{resume_id}/` and retrieves the five most relevant chunks. |
-| Resume–JD matching | Grounds a LangChain prompt with retrieved resume context and returns JSON containing a match score, matched/missing skills, reasoning, and recommendations. |
+| Resume–JD matching | Compares atomic JD skills against retrieved evidence and the complete stored resume, calculates TF-IDF similarity, and returns a transparent hybrid score with matched/missing skills. |
 | Resume improvement | Returns structured summary, keyword, project, skill, and ATS suggestions grounded in retrieved resume context. |
 | Cover letters | Generates a structured subject, letter, strengths, included keywords, and ATS-alignment notes without intentionally inventing experience. |
 | Candidate ranking | Extracts multiple PDFs, calculates TF-IDF cosine similarity, requests an LLM evaluation, computes a weighted score, and sorts descending. |
@@ -79,7 +79,7 @@ The main RAG matching flow is:
 9. The user submits a job description and an optional resume ID to `POST /match/`. If the ID is omitted, the most recently stored resume is selected globally.
 10. The job description becomes the vector-search query; FAISS retrieves the five most relevant resume chunks.
 11. The retrieved context and job description are passed to the job-match LangChain prompt.
-12. `JsonOutputParser` parses the model output into JSON containing `match_score`, `matched_skills`, `missing_skills`, `reasoning`, and `recommendations`.
+12. `JsonOutputParser` parses atomic matched/missing skill lists, reasoning, and recommendations. The backend calculates explicit skill coverage and full-document TF-IDF similarity, then returns `match_score = (skill coverage × 0.70) + (TF-IDF similarity × 0.30)`.
 13. If a WebSocket is connected at `/ws/{resume_id}`, it receives validation, retrieval, LLM, and completion events.
 
 Candidate ranking is a separate workflow: an authenticated HR user submits a job description and multiple PDF resumes. Each full extracted resume receives a TF-IDF score and an LLM evaluation; results are combined and sorted as described in [Candidate-ranking approach](#candidate-ranking-approach). It does not use the per-resume FAISS indexes.

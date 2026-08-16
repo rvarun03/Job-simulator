@@ -4,6 +4,8 @@ import { useRef, useState } from "react";
 
 type MatchResult = {
     match_score: number;
+    skill_match_score?: number;
+    tfidf_score?: number;
     matched_skills: string[];
     missing_skills: string[];
     reasoning: string;
@@ -293,6 +295,26 @@ export default function Home() {
 
                             <p className="mt-5 rounded-md border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-sm text-emerald-100">
                                 {matchedSkills.length} of {matchedSkills.length + missingSkills.length} technical skills matched
+                            </p>
+
+                            <div className="mt-4 grid grid-cols-2 gap-3">
+                                <div className="rounded-md border border-white/10 bg-white/[0.03] p-3">
+                                    <p className="text-xs text-zinc-500">Skill coverage</p>
+                                    <p className="mt-1 text-lg font-semibold text-white">
+                                        {Number(result.skill_match_score ?? 0).toFixed(1)}%
+                                    </p>
+                                </div>
+
+                                <div className="rounded-md border border-white/10 bg-white/[0.03] p-3">
+                                    <p className="text-xs text-zinc-500">TF-IDF similarity</p>
+                                    <p className="mt-1 text-lg font-semibold text-white">
+                                        {Number(result.tfidf_score ?? 0).toFixed(1)}%
+                                    </p>
+                                </div>
+                            </div>
+
+                            <p className="mt-3 text-xs leading-5 text-zinc-500">
+                                Final score combines 70% explicit skill coverage and 30% lexical similarity.
                             </p>
 
                         </div>
