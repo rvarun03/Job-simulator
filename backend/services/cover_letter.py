@@ -1,6 +1,6 @@
 import asyncio
 from sqlalchemy.orm import Session
-from services.FAISS import get_resume_context
+from services.FAISS import get_resume_context_for_queries
 from repository.resume import get_resume_by_id_or_latest
 from chains.cover_letter_chain import cover_letter_chain
 from core.ws_manager import manager
@@ -22,9 +22,15 @@ async def generate_cover_letter(resume_id: int | None, job_description: str, db:
     )
 
     resume_context = await asyncio.to_thread(
-        get_resume_context,
+        get_resume_context_for_queries,
         resolved_resume_id,
-        job_description
+        [
+            job_description,
+            (
+                "candidate name professional summary work experience "
+                "projects achievements education technical skills"
+            )
+        ]
     )
 
     # Step 2 LLM Generation

@@ -44,6 +44,30 @@ def get_resume_context(resume_id:int, query:str):
     docs=retriever.invoke(query)
     
     return "\n".join([d.page_content for d in docs])
-    
 
 
+def get_resume_context_for_queries(
+    resume_id: int,
+    queries: list[str]
+) -> str:
+    """Retrieve and deduplicate resume evidence for multiple related queries."""
+    embeddings = get_embeddings()
+    path = f"{BASE_PATH}/{resume_id}"
+    vectorstore = FAISS.load_local(
+        path,
+        embeddings,
+        allow_dangerous_deserialization=True
+    )
+    retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
+
+    unique_chunks: list[str] = []
+    seen_chunks: set[str] = set()
+
+    for query in queries:
+        for doc in retriever.invoke(query):
+            content = doc.page_content.strip()
+            if content and content not in seen_chunks:
+                seen_chunks.add(content)
+                unique_chunks.append(content)
+
+    return "\n\n".join(unique_chunks)
