@@ -292,7 +292,7 @@ export default function Home() {
                             </div>
 
                             <p className="mt-5 rounded-md border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-sm text-emerald-100">
-                                {matchedSkills.length} matched skills found
+                                {matchedSkills.length} of {matchedSkills.length + missingSkills.length} technical skills matched
                             </p>
 
                         </div>
@@ -307,7 +307,7 @@ export default function Home() {
 
                                 <div className="mt-4 flex flex-wrap gap-2">
 
-                                    {matchedSkills.map(
+                                    {matchedSkills.length > 0 ? matchedSkills.map(
                                         (skill: string) => (
 
                                             <span
@@ -318,6 +318,10 @@ export default function Home() {
                                             </span>
 
                                         )
+                                    ) : (
+                                        <p className="text-sm leading-6 text-zinc-500">
+                                            No explicit skill matches were identified.
+                                        </p>
                                     )}
 
                                 </div>

@@ -460,24 +460,36 @@ Important gaps include a hard-coded JWT secret, open registration that allows cl
 
 ## Demo
 
-No screenshots, recorded demo, or deployed URL are currently documented. Add assets under `docs/screenshots/` and replace the placeholders below when they exist.
+The repository includes walkthrough recordings for both application roles:
 
-| View | Placeholder |
-| --- | --- |
-| Login or registration | `docs/screenshots/login.png` |
-| Resume upload | `docs/screenshots/resume-upload.png` |
-| Job-description input | `docs/screenshots/job-description.png` |
-| Match analysis | `docs/screenshots/analysis-result.png` |
-| Candidate ranking | `docs/screenshots/candidate-ranking.png` |
-| Swagger UI | `docs/screenshots/swagger.png` |
-| Demo GIF/video | _Add link_ |
-| Live application | _Add URL after deployment_ |
+- [Watch the job-seeker workflow](docs/demos/User_flow.webm)
+- [Watch the HR candidate-ranking workflow](docs/demos/hr_flow.webm)
 
-Markdown example after adding an image:
+> GitHub opens the WebM files in its media viewer. A public live-application URL has not been added.
 
-```markdown
-![Resume upload interface](docs/screenshots/resume-upload.png)
-```
+### Resume–JD match analysis
+
+The match view compares a saved resume with a pasted job description and presents the overall score with matched and missing technical skills.
+
+![Resume–JD match analysis showing the score and skill breakdown](docs/screenshots/Job_Match.png)
+
+### Resume improvement suggestions
+
+The improvement workspace organizes generated feedback into summary improvements, missing keywords, project suggestions, skill recommendations, and ATS-focused tips.
+
+![Resume improvement workspace showing structured suggestions](docs/screenshots/Resume_Improvement.png)
+
+### Grounded cover-letter generation
+
+The cover-letter workspace pairs job details with a paper-style preview and supports copying the generated application text.
+
+![Cover-letter generator with application details and generated preview](docs/screenshots/Cover_letter.png)
+
+### HR candidate ranking
+
+The HR view displays ranked candidates with final, AI, TF-IDF, and skill scores alongside matched skills, missing skills, strengths, concerns, and an LLM-generated summary.
+
+![HR candidate-ranking result with scoring and evaluation details](docs/screenshots/HR_Ranking.png)
 
 ## Current limitations
 
@@ -529,7 +541,8 @@ Markdown example after adding an image:
 - [ ] Add representative evaluation datasets and monitor ranking quality/bias
 - [ ] Harden Docker configuration and add deployment automation
 - [ ] Add structured logging, tracing, metrics, and error monitoring
-- [ ] Add screenshots, a demo recording, and a deployment URL
+- [x] Add feature screenshots and job-seeker/HR demo recordings
+- [ ] Add a public deployment URL
 
 ## Learning outcomes
 
