@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: back-end
+        working-directory: backend
     steps:
       - uses: actions/checkout@v4
 
@@ -20,12 +20,12 @@ jobs:
           python-version: "3.13"
 
       - run: pip install -r requirements.txt
-        working-directory: back-end
+        working-directory: backend
 
       - run: pytest tests
-        working-directory: back-end
+        working-directory: backend
         env:
-          PYTHONPATH: app
+          PYTHONPATH: .
           DATABASE_URL: sqlite:///./test.db
           LLM_PROVIDER: ollama
           OLLAMA_MODEL: llama3.2

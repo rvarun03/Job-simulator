@@ -18,9 +18,9 @@
 !/frontend/.yarn/versions
 
 # Backend Dependencies
-/back-end/venv/
-/back-end/env/
-/back-end/.venv/
+/backend/venv/
+/backend/env/
+/backend/.venv/
 
 # Testing
 /coverage

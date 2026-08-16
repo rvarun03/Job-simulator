@@ -1,19 +1,18 @@
 
 services:
-  back-end:
+  backend:
     build:
-      context: ./back-end
-    container_name: back-end
+      context: ./backend
+    container_name: backend
     ports:
       - "8000:8000"
     env_file:
-      - ./back-end/.env
-
-    volumes:
-      - ./back-end/app:/app
-
-    working_dir: /app
-
+      - ./backend/.env
+    environment:
+      DATABASE_URL: postgresql+psycopg://varun:123@db:5432/ai_project
+    depends_on:
+      db:
+        condition: service_healthy
     restart: unless-stopped
 
   front-end:
@@ -25,7 +24,7 @@ services:
     env_file:
       - ./front-end/.env  
     depends_on:
-      - back-end
+      - backend
     restart: unless-stopped
 
   db:
@@ -33,6 +32,15 @@ services:
     environment:
       POSTGRES_DB: ai_project
       POSTGRES_USER: varun
-      POSTGRES_PASSWORD: 123
-      volumes:
-      - postgres_data:/var/lib/postgresql/data  
+      POSTGRES_PASSWORD: "123"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U varun -d ai_project"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
