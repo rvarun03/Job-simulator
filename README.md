@@ -282,8 +282,7 @@ Unless noted otherwise, the current routes do **not** require authentication.
 | --- | --- | --- | --- | --- |
 | `POST` | `/hr/candidates/rank` | Rank multiple candidate PDFs against one JD | Multipart `job_description` and repeated `resumes` | Bearer JWT; `HR` role |
 | `POST` | `/analyze-job/` | Experimental raw-text parse/match route; currently broken by a chain input-key mismatch and does not reach persistence | JSON: `resume_text`, `job_description` | No |
-| `POST` | `/copilot/` | Route a career request to available LangChain tools | JSON: `prompt`, optional `resume_id`, `job_description`, `location` | No |
-| `GET` | `/` | Basic API status message | None | No |
+
 
 ### Example requests
 
@@ -409,7 +408,6 @@ Example shortened ranking response:
 
 Verified protections include PDF/DOCX extension checks in the primary upload flow, empty-text rejection, Pydantic request validation, bcrypt password hashing, expiring JWTs, and HR-role enforcement on candidate ranking.
 
-Important gaps include a hard-coded JWT secret, open registration that allows clients to request the HR role, no password policy, no upload-size limits or content-signature validation, wildcard CORS, missing ownership checks, unauthenticated WebSockets and most API routes, and no application-level encryption or cleanup policy. Candidate ranking also lacks explicit file validation and attempts to parse every submitted file as a PDF.
 
 ## Demo
 
@@ -444,25 +442,7 @@ The HR view displays ranked candidates with final, AI, TF-IDF, and skill scores 
 
 ![HR candidate-ranking result with scoring and evaluation details](docs/screenshots/HR_Ranking.png)
 
-## Current limitations
 
-- Most endpoints do not enforce authentication, and resume records have no user ownership relationship.
-- Users can self-select the HR role during public registration.
-- Omitting `resume_id` selects the latest resume across the entire database.
-- FAISS indexes are local, trusted-pickle-based files with no automatic cleanup or distributed storage.
-- Match, improvement, cover-letter, chat, and candidate-ranking results are not stored as user history.
-- Candidate ranking processes PDFs sequentially and does not validate extension, MIME type, size, or empty content before parsing.
-- Candidate ranking depends on an LLM-generated score and has no evaluation dataset or calibration evidence.
-- Chat history and WebSocket connections are in-memory, single-process state and disappear on restart.
-- WebSocket URLs are hard-coded in active frontend pages, and some socket integrations are commented out.
-- CORS is unrestricted, the JWT secret is hard-coded, and tokens are stored in browser local storage.
-- Raw resume chunks and selected generated content are printed to backend logs.
-- Database tables are created directly at startup; there are no schema migrations.
-- External LLM and embedding integrations require local model availability, model downloads, network access, or third-party credentials.
-- Automated coverage is limited to one root-endpoint test; `pytest` is not in backend requirements and no frontend test suite exists.
-- The Docker setup needs build-time frontend configuration and secret handling improvements.
-- The legacy raw-text analysis route has a prompt-variable mismatch.
-- No production deployment, monitoring, or model-quality evaluation is included.
 
 ## Learning outcomes
 
