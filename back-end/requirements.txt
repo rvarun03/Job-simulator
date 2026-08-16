@@ -134,7 +134,6 @@ srsly==2.5.3
 starlette==1.0.0
 sympy==1.14.0
 tenacity==9.1.4
-thinc==8.3.13
 threadpoolctl==3.6.0
 tokenizers==0.22.2
 torch==2.11.0
